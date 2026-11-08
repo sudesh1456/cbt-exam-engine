@@ -35,14 +35,17 @@ export function ExamRoom({
   const act = (type: 'save-next' | 'mark-next' | 'save-mark-next') => dispatch({ type, now: timestamp() });
   const goto = (id: string) => dispatch({ type: 'goto', id, now: timestamp() });
   const index = all.findIndex((x) => x.id === q.id);
+  const counts = statusCounts(attempt);
+  const sectionIndex = exam.sections.findIndex((s) => s.id === section.id) + 1;
 
   return (
     <div className="flex h-screen flex-col bg-page">
       {/* Top bar */}
-      <header className="flex items-center gap-4 border-b border-line bg-white px-4 py-2.5">
+      <header className="flex items-center gap-4 border-b border-line bg-white px-4 py-2.5 shadow-sm">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand text-xs font-bold text-white">CBT</div>
         <div className="min-w-0">
           <div className="truncate font-semibold">{exam.title}</div>
-          <div className="text-xs text-muted">Candidate: Guest · {all.length} questions</div>
+          <div className="text-[11px] font-medium tracking-wide text-muted">JEE CBT PRACTICE · {all.length} QUESTIONS</div>
         </div>
         <div
           className={`ml-auto rounded-lg px-3 py-1.5 font-mono text-lg font-semibold tabular-nums ${remaining < Math.min(5 * 60_000, exam.durationMinutes * 60_000 * 0.2) ? 'bg-danger/10 text-danger' : 'bg-brand/10 text-brand'}`}
@@ -81,8 +84,11 @@ export function ExamRoom({
       <div className="flex min-h-0 flex-1">
         {/* Question */}
         <main className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center justify-between border-b border-line bg-white px-5 py-2.5 text-sm">
-            <span className="font-semibold">Question {q.number}</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white px-5 py-3 text-sm">
+            <div className="flex items-center gap-3">
+              <span className="rounded-md bg-brand/10 px-2.5 py-1 font-semibold text-brand">Q.{q.number}</span>
+              <span className="text-xs text-muted">Section {sectionIndex} of {exam.sections.length} · {section.name}</span>
+            </div>
             <span className="flex gap-3 text-xs text-muted">
               <span>
                 {q.type === 'single'
@@ -97,9 +103,16 @@ export function ExamRoom({
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 py-6">
-            <p className="max-w-3xl text-[17px] leading-relaxed">{q.text}</p>
-            <div className="mt-6 max-w-3xl">
+          <div className="flex-1 overflow-y-auto bg-page/60 px-4 py-5 sm:px-6 sm:py-7">
+            <div className="mb-5 flex max-w-3xl items-center justify-between text-xs text-muted">
+              <span>Question {index + 1} of {all.length}</span>
+              <span>{q.type === 'multiple' ? 'Select all correct options' : q.type === 'numeric' ? 'Enter a numerical value' : 'Select one option'}</span>
+            </div>
+            <div className="max-w-3xl rounded-xl border border-line bg-white p-4 shadow-sm sm:p-6">
+              <p className="text-[17px] leading-relaxed">{q.text}</p>
+            </div>
+            <div className="mt-5 max-w-3xl rounded-xl border border-line bg-white p-4 sm:p-6">
+              <div className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted">Answer</div>
               <Answer q={q} value={state.draft} onChange={(value) => dispatch({ type: 'draft', value })} />
             </div>
           </div>
@@ -138,6 +151,10 @@ export function ExamRoom({
 
         {/* Palette */}
         <aside className="hidden w-80 shrink-0 flex-col border-l border-line bg-white md:flex">
+          <div className="border-b border-line px-4 py-3">
+            <div className="font-semibold">Question Palette</div>
+            <div className="mt-1 text-xs text-muted">Select a question to navigate</div>
+          </div>
           <Legend attempt={attempt} />
           <div className="flex-1 overflow-y-auto p-4">
             {exam.sections.map((s) => (
@@ -160,6 +177,10 @@ export function ExamRoom({
             ))}
           </div>
           <div className="border-t border-line p-4">
+            <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+              <span className="rounded-md bg-success/10 px-2 py-1.5 text-success">Answered: {counts.answered + counts['answered-marked']}</span>
+              <span className="rounded-md bg-danger/10 px-2 py-1.5 text-danger">Unanswered: {counts['not-answered'] + counts['not-visited']}</span>
+            </div>
             <button type="button" className={`${btn('primary')} w-full`} onClick={() => setConfirming(true)}>
               Submit Test
             </button>

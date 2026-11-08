@@ -183,3 +183,22 @@ describe('bundled exams', () => {
     expect(r.ok ? [] : r.errors).toEqual([]);
   });
 });
+
+
+describe('regression fixes', () => {
+  it('preserves an unsaved draft when the current question is selected again', () => {
+    const start = startAttempt(E, 10_000);
+    const drafted = reduce(E, start, { type: 'draft', value: 'b' });
+    const selectedAgain = reduce(E, drafted, { type: 'goto', id: 'q1', now: 11_000 });
+    expect(selectedAgain.questions.q1.draft).toBe('b');
+    expect(selectedAgain.questions.q1.response).toBeNull();
+  });
+
+  it('does not save unfinished numeric text as an answer', () => {
+    const start = startAttempt(E, 10_000);
+    const drafted = reduce(E, start, { type: 'draft', value: '-' });
+    const moved = reduce(E, drafted, { type: 'save-next', now: 11_000 });
+    expect(moved.questions.q1.response).toBeNull();
+    expect(moved.questions.q1.status).toBe('not-answered');
+  });
+});

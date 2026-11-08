@@ -7,7 +7,7 @@ import { reduce, startAttempt, type Action, type AttemptState } from './engine/a
 import { parseExam, type ExamDef } from './engine/schema';
 import { loadImported, loadSaved, save, saveImported } from './lib/storage';
 
-const REPO_URL = 'https://github.com/sudesh1456/cbt-exam-engine';
+const REPO_URL = 'https://github.com/ayushverma9408/cbt-exam-engine-9408';
 const BUILT_IN = [quick, aptitude].map((json) => {
   const r = parseExam(json);
   if (!r.ok) throw new Error(`Invalid bundled exam: ${r.errors.join('; ')}`);

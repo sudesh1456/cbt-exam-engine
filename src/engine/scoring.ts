@@ -60,7 +60,8 @@ export function scoreQuestion(
         : { outcome: 'incorrect', marks: -marking.incorrect };
 
     case 'numeric': {
-      const value = Number(response);
+      if (typeof response !== 'number' || !Number.isFinite(response)) return { outcome: 'unattempted', marks: 0 };
+      const value = response;
       return Math.abs(value - q.answer) <= q.tolerance + 1e-9
         ? { outcome: 'correct', marks: marking.correct }
         : { outcome: 'incorrect', marks: -marking.incorrect };
